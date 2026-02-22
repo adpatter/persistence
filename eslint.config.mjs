@@ -21,7 +21,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["**/*.ts", "**/*.js", "**/*.mjs", "**/*.cjs"],
+    files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.cjs"],
     rules: {
       quotes: ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
       "@stylistic/semi": ["error", "always"],
