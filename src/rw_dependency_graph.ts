@@ -15,17 +15,16 @@ export class RWDependencyGraph {
       let release!: () => void;
       const currentRead = new Promise<void>((r) => {
         release = () => {
-          if (this.pathToRead.get(path) == currentRead) {
+          if (this.pathToRead.get(path) === read) {
             this.pathToRead.delete(path);
           }
           r();
         };
       });
 
-      this.pathToRead.set(
-        path,
-        lastRead.then(() => currentRead) // A subsequent write may not write until all prior reads have completed.
-      );
+      const read = lastRead.then(() => currentRead); // A subsequent write may not write until all prior reads have completed.
+
+      this.pathToRead.set(path, read);
 
       await lastWrite;
 
@@ -37,22 +36,20 @@ export class RWDependencyGraph {
       let release!: () => void;
       const currentWrite = new Promise<void>((r) => {
         release = () => {
-          if (this.pathToWrite.get(path) == currentWrite) {
+          if (this.pathToWrite.get(path) === write) {
             this.pathToWrite.delete(path);
           }
           r();
         };
       });
 
-      this.pathToWrite.set(
-        path,
-        Promise.all([lastRead, lastWrite]).then(() => currentWrite) // A subsequent write may not write until all prior reads and writes have completed.
-      );
+      const write = Promise.all([lastRead, lastWrite]).then(() => currentWrite); // A subsequent write may not write until all prior reads and writes have completed.
+
+      this.pathToWrite.set(path, write);
 
       await Promise.all([lastRead, lastWrite]);
 
       return release;
     }
-    throw new Error("Not Implemented.");
   };
 }
