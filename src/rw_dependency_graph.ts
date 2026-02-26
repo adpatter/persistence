@@ -14,7 +14,12 @@ export class RWDependencyGraph {
 
       let release!: () => void;
       const currentRead = new Promise<void>((r) => {
-        release = r;
+        release = () => {
+          if (this.pathToRead.get(path) == currentRead) {
+            this.pathToRead.delete(path);
+          }
+          r();
+        };
       });
 
       this.pathToRead.set(
@@ -31,7 +36,12 @@ export class RWDependencyGraph {
 
       let release!: () => void;
       const currentWrite = new Promise<void>((r) => {
-        release = r;
+        release = () => {
+          if (this.pathToWrite.get(path) == currentWrite) {
+            this.pathToWrite.delete(path);
+          }
+          r();
+        };
       });
 
       this.pathToWrite.set(
@@ -39,8 +49,7 @@ export class RWDependencyGraph {
         Promise.all([lastRead, lastWrite]).then(() => currentWrite) // A subsequent write may not write until all prior reads and writes have completed.
       );
 
-      await lastRead;
-      await lastWrite;
+      await Promise.all([lastRead, lastWrite]);
 
       return release;
     }
