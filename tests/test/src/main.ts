@@ -27,9 +27,12 @@ if (process.env.HEAP_SNAPSHOT === "1") {
 }
 
 for (let i = 0; i < 1e7; i++) {
-  const release = await dg.lock("test", "read");
+  const r1 = await dg.lock("test", "read");
   await new Promise((r) => setImmediate(r));
-  release();
+  r1();
+  const r2 = await dg.lock("test", "write");
+  await new Promise((r) => setImmediate(r));
+  r2();
 }
 
 if (process.env.HEAP_SNAPSHOT === "1") {

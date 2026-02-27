@@ -2,71 +2,78 @@ export class RWDependencyGraph {
   public pathToWrite: Map<string, Promise<unknown>>;
   public pathToRead: Map<string, Promise<unknown>>;
 
-  // Possible extension: per-path "poison" state. If a lock release fails in a way
-  // that makes a path unsafe (e.g., corruption), callers could mark the path as
-  // poisoned so future locks fail fast until an explicit reset/repair clears it.
   constructor() {
     this.pathToWrite = new Map();
     this.pathToRead = new Map();
   }
 
   public lock = async (path: string, type: "read" | "write"): Promise<() => void> => {
-    if (type == "read") {
-      const lastRead = this.pathToRead.get(path) ?? Promise.resolve();
-      const lastWrite = this.pathToWrite.get(path) ?? Promise.resolve();
+    switch (type) {
+      case "read": {
+        const lastRead = this.pathToRead.get(path) ?? Promise.resolve();
+        const lastWrite = this.pathToWrite.get(path) ?? Promise.resolve();
 
-      let release!: () => void;
-      const currentRead = new Promise<void>((r) => {
-        release = () => {
-          r();
-        };
-      });
+        let release!: () => void;
+        const currentRead = new Promise<void>((r) => {
+          release = () => {
+            r();
+          };
+        });
 
-      // A subsequent write may not write until all prior reads have completed.
-      // `read` will resolve to currentRead once all prior reads resolve.
-      const read = lastRead.then(() => currentRead);
+        // A subsequent write may not write until all prior reads have completed.
+        // `read` will resolve to void (currentRead) once all prior reads resolve.
+        const read = lastRead.then(() => currentRead);
 
-      this.pathToRead.set(path, read);
+        this.pathToRead.set(path, read);
 
-      read
-        .finally(() => {
-          if (this.pathToRead.get(path) === read) {
-            this.pathToRead.delete(path);
-          }
-        })
-        .catch(console.error);
+        // Cleanup read path if this is the last read.
+        read
+          .finally(() => {
+            if (this.pathToRead.get(path) === read) {
+              this.pathToRead.delete(path);
+            }
+          })
+          .catch(console.error);
 
-      await lastWrite;
+        await lastWrite;
 
-      return release;
-    } else {
-      // write
-      const lastRead = this.pathToRead.get(path) ?? Promise.resolve();
-      const lastWrite = this.pathToWrite.get(path) ?? Promise.resolve();
+        return release;
+      }
+      case "write": {
+        // write
+        const lastRead = this.pathToRead.get(path) ?? Promise.resolve();
+        const lastWrite = this.pathToWrite.get(path) ?? Promise.resolve();
 
-      let release!: () => void;
-      const currentWrite = new Promise<void>((r) => {
-        release = () => {
-          r();
-        };
-      });
+        let release!: () => void;
+        const currentWrite = new Promise<void>((r) => {
+          release = () => {
+            r();
+          };
+        });
 
-      // A subsequent write may not write until all prior reads and writes have completed.
-      const write = Promise.all([lastRead, lastWrite]).then(() => currentWrite);
+        // A subsequent write may not write until all prior reads and writes have completed.
+        // `write` will resolve to void (currentWrite) once all prior reads and writes resolve.
+        const write = Promise.all([lastRead, lastWrite]).then(() => currentWrite);
 
-      this.pathToWrite.set(path, write);
+        this.pathToWrite.set(path, write);
 
-      write
-        .finally(() => {
-          if (this.pathToWrite.get(path) === write) {
-            this.pathToWrite.delete(path);
-          }
-        })
-        .catch(console.error);
+        // Cleanup write path if this is the last write.
+        write
+          .finally(() => {
+            if (this.pathToWrite.get(path) === write) {
+              this.pathToWrite.delete(path);
+            }
+          })
+          .catch(console.error);
 
-      await Promise.all([lastRead, lastWrite]);
+        await Promise.all([lastRead, lastWrite]);
 
-      return release;
+        return release;
+      }
+      default: {
+        const _exhaustive: never = type;
+        throw new Error(`Unexpected lock type: ${String(_exhaustive)}`);
+      }
     }
   };
 }
