@@ -71,8 +71,7 @@ export class RWDependencyGraph {
         return release;
       }
       default: {
-        const _exhaustive: never = type;
-        throw new Error(`Unexpected lock type: ${String(_exhaustive)}`);
+        throw new Error(`Unexpected lock type: ${String(type)}`);
       }
     }
   };
