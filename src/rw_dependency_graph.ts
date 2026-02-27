@@ -26,7 +26,7 @@ export class RWDependencyGraph {
 
         this.pathToRead.set(path, read);
 
-        // Cleanup read path if this is the last read.
+        // Cleanup read tail if this read is still the current path tail.
         read
           .finally(() => {
             if (this.pathToRead.get(path) === read) {
@@ -57,7 +57,7 @@ export class RWDependencyGraph {
 
         this.pathToWrite.set(path, write);
 
-        // Cleanup write path if this is the last write.
+        // Cleanup write tail if this write is still the current path tail.
         write
           .finally(() => {
             if (this.pathToWrite.get(path) === write) {
