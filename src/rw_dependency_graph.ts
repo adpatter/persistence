@@ -1,6 +1,6 @@
 export class RWDependencyGraph {
-  protected pathToWrite: Map<string, Promise<unknown>>;
-  protected pathToRead: Map<string, Promise<unknown>>;
+  public pathToWrite: Map<string, Promise<unknown>>;
+  public pathToRead: Map<string, Promise<unknown>>;
 
   constructor() {
     this.pathToWrite = new Map();
@@ -19,9 +19,12 @@ export class RWDependencyGraph {
         };
       });
 
-      const read = lastRead.then(() => currentRead); // A subsequent write may not write until all prior reads have completed.
+      // A subsequent write may not write until all prior reads have completed.
+      // `read` will resolve to currentRead once all prior reads resolve.
+      const read = lastRead.then(() => currentRead);
 
       this.pathToRead.set(path, read);
+
       read
         .finally(() => {
           if (this.pathToRead.get(path) === read) {
@@ -34,6 +37,7 @@ export class RWDependencyGraph {
 
       return release;
     } else {
+      // write
       const lastRead = this.pathToRead.get(path) ?? Promise.resolve();
       const lastWrite = this.pathToWrite.get(path) ?? Promise.resolve();
 
@@ -44,9 +48,11 @@ export class RWDependencyGraph {
         };
       });
 
-      const write = Promise.all([lastRead, lastWrite]).then(() => currentWrite); // A subsequent write may not write until all prior reads and writes have completed.
+      // A subsequent write may not write until all prior reads and writes have completed.
+      const write = Promise.all([lastRead, lastWrite]).then(() => currentWrite);
 
       this.pathToWrite.set(path, write);
+
       write
         .finally(() => {
           if (this.pathToWrite.get(path) === write) {

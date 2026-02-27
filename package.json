@@ -12,7 +12,8 @@
     "lint": "npx eslint .",
     "format": "npx prettier --write .",
     "format:lint": "npm run format && npm run lint",
-    "test": "npm update && npm run clean:build && npm update --prefix ./test && npm run clean:build --prefix ./test && npm start --prefix ./test"
+    "test": "npm update && npm run clean:build && npm update --prefix ./tests/test && npm run clean:build --prefix ./tests/test && npm start --prefix ./tests/test",
+    "monitor": "nodemon ."
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,7 @@
     "@types/node": "^25.3.0",
     "eslint": "^10.0.1",
     "globals": "^17.3.0",
+    "nodemon": "^3.1.14",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.0"

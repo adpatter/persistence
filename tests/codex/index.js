@@ -439,6 +439,52 @@ const main = async () => {
     }
   }
 
+  // Single-path hammer: extreme contention on one path.
+  const hammerPath = "file://hammer";
+  const hammerReads = new Map([[hammerPath, 0]]);
+  const hammerWrites = new Map([[hammerPath, 0]]);
+  const hammerOps = [];
+  const hammerCount = 2000;
+
+  for (let i = 0; i < hammerCount; i++) {
+    const type = lcg() < 0.7 ? "read" : "write";
+    const startDelay = Math.floor(lcg() * 5);
+    const holdDelay = 1 + Math.floor(lcg() * 8);
+
+    hammerOps.push(
+      (async () => {
+        await sleep(startDelay);
+        const release = await graph.lock(hammerPath, type);
+
+        if (type === "read") {
+          assert.equal(hammerWrites.get(hammerPath), 0, "hammer read while write active");
+          hammerReads.set(hammerPath, hammerReads.get(hammerPath) + 1);
+        } else {
+          assert.equal(hammerWrites.get(hammerPath), 0, "hammer write while write active");
+          assert.equal(hammerReads.get(hammerPath), 0, "hammer write while reads active");
+          hammerWrites.set(hammerPath, 1);
+        }
+
+        await sleep(holdDelay);
+
+        if (type === "read") {
+          hammerReads.set(hammerPath, hammerReads.get(hammerPath) - 1);
+        } else {
+          hammerWrites.set(hammerPath, 0);
+        }
+
+        release();
+      })()
+    );
+  }
+
+  await Promise.all(hammerOps);
+  await flush();
+  assert.equal(hammerReads.get(hammerPath), 0, "hammer reads should be drained");
+  assert.equal(hammerWrites.get(hammerPath), 0, "hammer writes should be drained");
+  assert.equal(graph.pathToRead.size, 0, "read map should be empty after hammer");
+  assert.equal(graph.pathToWrite.size, 0, "write map should be empty after hammer");
+
   console.log("RWDependencyGraph semantics verified.");
 };
 
