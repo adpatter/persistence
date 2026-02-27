@@ -2,6 +2,9 @@ export class RWDependencyGraph {
   public pathToWrite: Map<string, Promise<unknown>>;
   public pathToRead: Map<string, Promise<unknown>>;
 
+  // Possible extension: per-path "poison" state. If a lock release fails in a way
+  // that makes a path unsafe (e.g., corruption), callers could mark the path as
+  // poisoned so future locks fail fast until an explicit reset/repair clears it.
   constructor() {
     this.pathToWrite = new Map();
     this.pathToRead = new Map();

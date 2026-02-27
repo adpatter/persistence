@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 const { performance } = require("node:perf_hooks");
-const { RWDependencyGraph } = require("../dist/index.js");
+const { RWDependencyGraph } = require("../../dist/index.js");
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const flush = async () => {
@@ -484,6 +484,45 @@ const main = async () => {
   assert.equal(hammerWrites.get(hammerPath), 0, "hammer writes should be drained");
   assert.equal(graph.pathToRead.size, 0, "read map should be empty after hammer");
   assert.equal(graph.pathToWrite.size, 0, "write map should be empty after hammer");
+
+  // Reentrancy deadlock test: read->write on same path should block.
+  const deadlockPath = "file://deadlock";
+  const readRelease = await graph.lock(deadlockPath, "read");
+  let writeAcquired = false;
+  const writeAttempt = (async () => {
+    const release = await graph.lock(deadlockPath, "write");
+    writeAcquired = true;
+    release();
+  })();
+  const timeout = new Promise((r) => setTimeout(r, 50, "timeout"));
+  const result = await Promise.race([writeAttempt.then(() => "acquired"), timeout]);
+  assert.equal(result, "timeout", "write should not acquire while read is held");
+  readRelease();
+  await writeAttempt;
+  assert.ok(writeAcquired, "write should acquire after read releases");
+
+  // Multi-path fairness: heavy contention on one path shouldn't block another.
+  const busyPath = "file://busy";
+  const freePath = "file://free";
+  const busyWrite = (async () => {
+    const release = await graph.lock(busyPath, "write");
+    await sleep(80);
+    release();
+  })();
+  await sleep(5);
+  const freeReadStart = performance.now();
+  const freeRead = (async () => {
+    const release = await graph.lock(freePath, "read");
+    const acquiredAt = performance.now();
+    release();
+    return acquiredAt;
+  })();
+  const acquiredAt = await freeRead;
+  await busyWrite;
+  assert.ok(
+    acquiredAt - freeReadStart < 40,
+    "free path read should not be blocked by busy path write"
+  );
 
   console.log("RWDependencyGraph semantics verified.");
 };
