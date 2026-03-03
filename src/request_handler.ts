@@ -50,12 +50,12 @@ export class RequestHandler {
         await this.processGet();
         break;
       }
-      case "POST": {
-        await this.processPost();
+      case "PUT": {
+        await this.processPut();
         break;
       }
       default: {
-        this.res.setHeader("Allow", "GET, POST");
+        this.res.setHeader("Allow", "GET, PUT");
         this.sendHttpResponse(405);
         break;
       }
@@ -64,7 +64,7 @@ export class RequestHandler {
 
   protected async processGet() {}
 
-  protected async processPost() {}
+  protected async processPut() {}
 
   public sendHttpResponse = (status: number) => {
     const message = `${status.toString()} (${http.STATUS_CODES[status] ?? "Error"})`;
