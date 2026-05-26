@@ -4,14 +4,14 @@ Persistence - a filesystem coordination layer.
 
 ## Introduction
 
-Persistence is an in-process filesystem coordination layer for code that routes operations through one shared lock manager. It provides hierarchical read/write locking, optional durability (see durability notes below), and atomic-style writes. Reads on the same file are concurrent; however, reads are partitioned by writes and conflicting writes are processed in order of arrival (FIFO).
+Persistence allows cooperating clients using the same lock manager to safely coordinate filesystem reads and writes without worrying about conflicting operations or interleaving writes. It provides hierarchical read/write locking, optional durability (see durability notes below), and atomic-style writes. Reads on the same file are concurrent; however, reads are partitioned by writes, and conflicting writes are processed in order of arrival (FIFO).
 
 ### Features
 
 - **A _zero-dependency_ filesystem coordination layer.**
 - Coordinates reads and writes that use the same `LockManager` with hierarchical path locks.
 - Provides atomic-style file replacement (temp file + rename).
-- Optionally attempts to flush file and directory metadata for stronger durability on write/delete.
+- Optionally attempts to flush file and directory metadata for stronger durability on write/rename/delete.
 - FIFO: for any two conflicting operations where at least one is a write, acquisition respects arrival order.
 
 ### Table of contents
@@ -46,7 +46,7 @@ Node.js `20.10.0` or newer is required.
 
 ```ts
 import { Client, LockManager } from "@far-analytics/persistence";
-import { once } from "node:events"; // for awaiting ReadStream and WriteStream events
+import { once } from "node:events"; // for awaiting stream events
 
 const manager = new LockManager();
 const client = new Client({ manager, durable: true });
@@ -113,7 +113,7 @@ Please see the Node.js [example](https://github.com/far-analytics/persistence/tr
 
 ## Locking model
 
-- Cooperative per-operation hierarchical locking within a single `LockManager` instance; this is not OS-level locking.
+- Cooperative per-operation hierarchical locking within a single `LockManager` instance.
 - Write partitioned FIFO: for any two conflicting operations where at least one is a write, acquisition respects arrival order.
 - Read operations can overlap other reads on the same path or within the same ancestor/descendant subtree.
 - Write operations are exclusive: a write on a path excludes all reads and writes on that path and any ancestor/descendant paths until the write is complete.
@@ -146,9 +146,12 @@ Persistence supports atomic-style file replacement via temp file + rename for `w
 
 ## API
 
-The _Persistence_ API provides a client and path-aware lock manager that coordinates operations.
+The _Persistence_ API provides a client and path-aware lock manager that coordinates operations. The documented package-root exports are:
 
-For advanced use cases, the package also exports low-level durability helpers and interfaces. These are primarily intended for custom `Client` subclasses or other code that needs to build coordinated filesystem mutations on top of the same primitives.
+- `Client` and its option/result types.
+- `LockManager` and `LockManagerOptions`.
+
+Implementation details such as `GraphNode`, `Artifact`, durable path helpers, and write-stream implementation classes/options are internal and are not package-root exports.
 
 ### The Client class
 
@@ -160,11 +163,13 @@ For advanced use cases, the package also exports low-level durability helpers an
 
 Use a `Client` instance to read, write, list, rename, and delete files with hierarchical locking.
 
+`Client` may be subclassed for application-specific filesystem workflows. Subclasses may use the protected read-only `manager` property to coordinate custom operations with the same `LockManager`.
+
 **client.durable**
 
 - `<boolean>`
 
-Whether durability mode is enabled for the client.
+Read-only. Whether durability mode is enabled for the client.
 
 **client.collect(path, options)**
 
@@ -261,7 +266,7 @@ In durable mode, a rejection does not always mean the old file is still in place
   - signal `<AbortSignal>` Abort an in‑progress write.
   - highWaterMark `<number>` Write buffer size.
 
-Returns: `<Promise<WriteStream>>`
+Returns: `<Promise<stream.Writable>>`
 
 Creates an atomic-style write stream abstraction backed by a temp file + rename and holds a write lock for the stream lifetime. Persistence supports the subset of write-stream options listed above.
 
@@ -318,6 +323,8 @@ In durable mode, a rejection does not always mean the target still exists. If re
 
 Creates a hierarchical lock manager. The lock manager enforces per-operation locking for reads and writes across hierarchical paths.
 
+`LockManager` is intended to be used through its public locking methods. Its lock graph and release bookkeeping are private implementation details.
+
 **lockManager.acquire(path, type)**
 
 - path `<string>` A path to acquire. Relative paths are normalized using `path.resolve`.
@@ -352,81 +359,9 @@ Returns: `<void>`
 
 Releases a lock by id.
 
-**lockManager.root**
-
-- `<GraphNode>`
-
-The root node of the internal lock graph.
-
-### Advanced Helpers
-
-These helpers are exported for low-level consumers who want to subclass `Client` or compose custom filesystem operations with the same durability steps used internally by the package.
-
-**makeDurablePath(path)**
-
-- path `<string>` A target path whose parent directory chain should exist.
-
-Returns: `<Promise<void>>`
-
-Ensures the parent directory chain for `path` exists. When a missing directory is created, the helper fsyncs its parent directory before proceeding. This is mainly useful for durable mutation flows that need to create missing parent directories before writing or streaming to a target path.
-
-**makePathDurable(path, options?)**
-
-- path `<string>` A path to fsync.
-- options `<{ force: boolean }>`
-  - force `<boolean>` If `true`, ignore `ENOENT` when opening `path`.
-
-Returns: `<Promise<void>>`
-
-Opens `path`, fsyncs it, and then closes it. This is mainly useful for durable-mode cleanup or post-mutation confirmation steps such as fsyncing a parent directory after `rename`, `write`, or `delete`.
-
-### The GraphNode class
-
-#### GraphNode
-
-- segment `<string>` The path segment for this node.
-- ancestor `<GraphNode | null>` The immediate ancestor node.
-- descendants `<Map<string, GraphNode>>` Immediate descendant nodes keyed by segment.
-- writeTail `<Promise<unknown> | null>` Tail promise for write locks.
-- readTail `<Promise<unknown> | null>` Tail promise for read locks.
-- descendantWriteTail `<Promise<unknown> | null>` Cached aggregate tail for descendant writes.
-- descendantReadTail `<Promise<unknown> | null>` Cached aggregate tail for descendant reads.
-
-**graphNode.appendWriteTail(lock)**
-
-- lock `<Promise<unknown>>`
-
-Chains a write tail onto this node.
-
-**graphNode.appendReadTail(lock)**
-
-- lock `<Promise<unknown>>`
-
-Chains a read tail onto this node.
-
-**graphNode.appendDescendantWriteTail(lock)**
-
-- lock `<Promise<unknown>>`
-
-Chains a cached aggregate descendant-write tail onto this node.
-
-**graphNode.appendDescendantReadTail(lock)**
-
-- lock `<Promise<unknown>>`
-
-Chains a cached aggregate descendant-read tail onto this node.
-
-### The Artifact interface
-
-#### Artifact
-
-- locks `<Array<Promise<unknown>>>` Promises the lock acquisition must await.
-- ancestors `<Array<GraphNode>>` Ancestor nodes used to cache aggregate descendant activity.
-- node `<GraphNode>` The graph node for the path.
-
 ## Versioning
 
-Until `2.0.0`, Persistence does not promise strict semantic versioning. Minor releases may include API adjustments, behavioral changes, or other breaking changes.
+Until `2.0.0`, Persistence does not promise strict semantic versioning. Minor releases may include API adjustments, behavioral changes, or other breaking changes. Only the documented package-root exports and documented public/protected members are supported API. Private members, deep imports, and undocumented constructor options are internal implementation details and may change without notice.
 
 ## Tests
 
@@ -444,10 +379,16 @@ git clone https://github.com/far-analytics/persistence
 cd persistence
 ```
 
-#### Install dependencies.
+#### Install Persistence dependencies.
 
 ```bash
 npm install
+```
+
+#### Install test suite dependencies.
+
+```bash
+npm install --prefix tests/test
 ```
 
 #### Run the tests.
