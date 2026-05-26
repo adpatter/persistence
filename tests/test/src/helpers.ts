@@ -1,8 +1,21 @@
 import * as fsp from "node:fs/promises";
 import * as pth from "node:path";
 import { createRequire } from "node:module";
+import { LockManager } from "@far-analytics/persistence";
 
 export const WEB_ROOT = pth.join(process.cwd(), "web_root");
+
+interface TestGraphNode {
+  descendants: Map<string, TestGraphNode>;
+  readTail: Promise<unknown> | null;
+  writeTail: Promise<unknown> | null;
+  descendantReadTail: Promise<unknown> | null;
+  descendantWriteTail: Promise<unknown> | null;
+}
+
+export const getLockManagerRootForTest = (manager: LockManager): TestGraphNode => {
+  return (manager as unknown as { root: TestGraphNode }).root;
+};
 
 const require = createRequire(import.meta.url);
 export const mutableFsp = require("node:fs/promises") as typeof fsp;

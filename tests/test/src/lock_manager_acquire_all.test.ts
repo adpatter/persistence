@@ -2,7 +2,7 @@ import * as pth from "node:path";
 import { LockManager } from "@far-analytics/persistence";
 import { test, suite } from "node:test";
 import * as assert from "node:assert";
-import { WEB_ROOT } from "./helpers.js";
+import { getLockManagerRootForTest, WEB_ROOT } from "./helpers.js";
 
 await suite("LockManager (acquireAll)", async () => {
   const tick = () => new Promise((r) => setImmediate(r));
@@ -19,7 +19,7 @@ await suite("LockManager (acquireAll)", async () => {
 
     await assert.rejects(rootManager.acquireAll([validPath, root]), /Operation is not supported\./);
 
-    assert.strictEqual(rootManager.root.descendants.size, 0);
+    assert.strictEqual(getLockManagerRootForTest(rootManager).descendants.size, 0);
   });
 
   await test("acquireAll on ancestor and descendant paths acquires without self-deadlock and blocks conflicting writes.", async () => {

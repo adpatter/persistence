@@ -2,7 +2,7 @@ import * as pth from "node:path";
 import { LockManager } from "@far-analytics/persistence";
 import { test, suite } from "node:test";
 import * as assert from "node:assert";
-import { WEB_ROOT } from "./helpers.js";
+import { getLockManagerRootForTest, WEB_ROOT } from "./helpers.js";
 
 await suite("LockManager (state-machine)", async () => {
   type RequestKind = "acquire" | "acquireAll";
@@ -188,11 +188,12 @@ await suite("LockManager (state-machine)", async () => {
 
     await Promise.all(requests.map((request) => request.promise));
     await tick();
-    assert.strictEqual(rootManager.root.descendants.size, 0, `lock graph pruned for seed ${seed.toString(16)}`);
-    assert.strictEqual(rootManager.root.readTail, null, `root read tail cleared for seed ${seed.toString(16)}`);
-    assert.strictEqual(rootManager.root.writeTail, null, `root write tail cleared for seed ${seed.toString(16)}`);
-    assert.strictEqual(rootManager.root.descendantReadTail, null, `root descendant read tail cleared for seed ${seed.toString(16)}`);
-    assert.strictEqual(rootManager.root.descendantWriteTail, null, `root descendant write tail cleared for seed ${seed.toString(16)}`);
+    const managerRoot = getLockManagerRootForTest(rootManager);
+    assert.strictEqual(managerRoot.descendants.size, 0, `lock graph pruned for seed ${seed.toString(16)}`);
+    assert.strictEqual(managerRoot.readTail, null, `root read tail cleared for seed ${seed.toString(16)}`);
+    assert.strictEqual(managerRoot.writeTail, null, `root write tail cleared for seed ${seed.toString(16)}`);
+    assert.strictEqual(managerRoot.descendantReadTail, null, `root descendant read tail cleared for seed ${seed.toString(16)}`);
+    assert.strictEqual(managerRoot.descendantWriteTail, null, `root descendant write tail cleared for seed ${seed.toString(16)}`);
   };
 
   await test("generated acquire/release sequences match a reference lock model.", async () => {

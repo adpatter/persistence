@@ -8,6 +8,13 @@ import { test, suite } from "node:test";
 import * as assert from "node:assert";
 import { WEB_ROOT, mutableFsp, withFailingSyncOnOpen, withTimeout } from "./helpers.js";
 
+interface TestWriteStreamInternals {
+  fsWriteStream: fs.WriteStream;
+  tempPath: string;
+}
+
+const getWriteStreamInternals = (stream: unknown): TestWriteStreamInternals => stream as TestWriteStreamInternals;
+
 await suite("Client (write streams)", async () => {
   await test("createWriteStream is atomic and holds the lock.", async () => {
     const streamClient = new Client({ manager: new LockManager({ errorHandler: () => {} }) });
@@ -193,7 +200,7 @@ await suite("Client (write streams)", async () => {
       ws.write(Buffer.alloc(8 * 1024 * 1024), resolve);
     });
 
-    ws.fsWriteStream.close();
+    getWriteStreamInternals(ws).fsWriteStream.close();
 
     await assert.rejects(finishedPromise, /fsWriteStream closed\./);
     const writeError = await withTimeout(writeCallback, "Timed out waiting for closed write callback.");
@@ -264,7 +271,7 @@ await suite("Client (write streams)", async () => {
     }
     ws.uncork();
 
-    ws.fsWriteStream.close();
+    getWriteStreamInternals(ws).fsWriteStream.close();
 
     await assert.rejects(finishedPromise, /fsWriteStream closed\./);
     const writeErrors = await withTimeout(Promise.all(callbacks), "Timed out waiting for closed writev callbacks.");
@@ -325,8 +332,8 @@ await suite("Client (write streams)", async () => {
 
     const ws = await streamClient.createWriteStream(file);
     ws.write(JSON.stringify({ v: 2 }));
-    ws.fsWriteStream.once("finish", () => {
-      fs.rmSync((ws as unknown as { tempPath: string }).tempPath, { force: true });
+    getWriteStreamInternals(ws).fsWriteStream.once("finish", () => {
+      fs.rmSync(getWriteStreamInternals(ws).tempPath, { force: true });
     });
     ws.end();
 
@@ -405,8 +412,8 @@ await suite("Client (write streams)", async () => {
 
     const ws = await streamClient.createWriteStream(file);
     ws.write(JSON.stringify({ v: 2 }));
-    ws.fsWriteStream.once("finish", () => {
-      fs.rmSync((ws as unknown as { tempPath: string }).tempPath, { force: true });
+    getWriteStreamInternals(ws).fsWriteStream.once("finish", () => {
+      fs.rmSync(getWriteStreamInternals(ws).tempPath, { force: true });
     });
     ws.end();
 
