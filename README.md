@@ -146,12 +146,7 @@ Persistence supports atomic-style file replacement via temp file + rename for `w
 
 ## API
 
-The _Persistence_ API provides a client and path-aware lock manager that coordinates operations. The documented package-root exports are:
-
-- `Client` and its option/result types.
-- `LockManager` and `LockManagerOptions`.
-
-Implementation details such as `GraphNode`, `Artifact`, durable path helpers, and write-stream implementation classes/options are internal and are not package-root exports.
+The _Persistence_ API provides a client and path-aware lock manager that coordinates operations.
 
 ### The Client class
 
