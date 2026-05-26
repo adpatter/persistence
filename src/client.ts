@@ -2,6 +2,7 @@ import * as fsp from "node:fs/promises";
 import * as fs from "node:fs";
 import * as pth from "node:path";
 import * as crypto from "node:crypto";
+import * as stream from "node:stream";
 import { once } from "node:events";
 import { LockManager } from "./lock_manager.js";
 import { Abortable } from "node:events";
@@ -72,8 +73,8 @@ export interface ClientOptions {
 }
 
 export class Client {
-  protected manager: LockManager;
-  public durable: boolean;
+  protected readonly manager: LockManager;
+  public readonly durable: boolean;
   constructor({ manager, durable }: ClientOptions) {
     this.manager = manager;
     this.durable = durable ?? false;
@@ -260,7 +261,7 @@ export class Client {
     }
   }
 
-  public async createWriteStream(path: string, options?: ClientCreateWriteStreamOptions | BufferEncoding): Promise<WriteStream> {
+  public async createWriteStream(path: string, options?: ClientCreateWriteStreamOptions | BufferEncoding): Promise<stream.Writable> {
     if (!pth.isAbsolute(path)) {
       throw new Error("Path must be absolute.");
     }

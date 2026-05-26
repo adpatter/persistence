@@ -5,11 +5,7 @@
  * Guarantees are scoped to operations that use this package and share that
  * manager; this is not OS-level or cross-process locking.
  */
-import { WriteStream, WriteStreamOptions } from "./write_stream.js";
 import { LockManager, LockManagerOptions } from "./lock_manager.js";
-import { GraphNode } from "./graph_node.js";
-import { Artifact } from "./artifact.js";
-import { makePathDurable, makeDurablePath } from "./common.js";
 import {
   Client,
   ClientCollectBufferOptions,
@@ -33,10 +29,6 @@ export {
   ClientCollectStringOptions,
   LockManager,
   LockManagerOptions,
-  Artifact,
-  GraphNode,
-  WriteStream,
-  WriteStreamOptions,
   ClientReadBufferOptions,
   ClientReadOptions,
   ClientCreateReadStreamOptions,
@@ -44,6 +36,4 @@ export {
   ClientCreateWriteStreamOptions,
   ClientWriteOptions,
   ClientOptions,
-  makeDurablePath,
-  makePathDurable,
 };

@@ -7,7 +7,7 @@ import { ClientCreateWriteStreamOptions } from "./client.js";
 import { once } from "node:events";
 import { makePathDurable } from "./common.js";
 
-export interface WriteStreamOptions {
+interface WriteStreamOptions {
   durable: boolean;
   path: string;
   dir: string;
@@ -15,13 +15,13 @@ export interface WriteStreamOptions {
   manager: LockManager;
 }
 export class WriteStream extends stream.Writable {
-  protected tempPath: string;
-  protected path: string;
-  protected dir: string;
-  protected durable: boolean;
-  protected manager: LockManager;
-  protected id: number;
-  public fsWriteStream: fs.WriteStream;
+  private readonly tempPath: string;
+  private readonly path: string;
+  private readonly dir: string;
+  private readonly durable: boolean;
+  private readonly manager: LockManager;
+  private readonly id: number;
+  private readonly fsWriteStream: fs.WriteStream;
 
   constructor(tempPath: string, options: ClientCreateWriteStreamOptions & WriteStreamOptions) {
     super({ highWaterMark: options.highWaterMark, defaultEncoding: options.encoding });

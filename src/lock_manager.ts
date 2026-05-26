@@ -7,10 +7,10 @@ export interface LockManagerOptions {
 }
 
 export class LockManager {
-  protected idToRelease: Map<number, (value: void | PromiseLike<void>) => void>;
-  public root: GraphNode;
-  protected id: number;
-  protected errorHandler: typeof console.error;
+  private readonly idToRelease: Map<number, (value: void | PromiseLike<void>) => void>;
+  private readonly root: GraphNode;
+  private id: number;
+  private readonly errorHandler: typeof console.error;
 
   constructor({ errorHandler }: LockManagerOptions = {}) {
     this.errorHandler = errorHandler ?? console.error;
@@ -166,7 +166,7 @@ export class LockManager {
     this.idToRelease.delete(id);
   };
 
-  protected prune = (node: GraphNode | null): void => {
+  private prune = (node: GraphNode | null): void => {
     while (node !== null) {
       // Pruning only depends on structural descendants and the node's own lock
       // tails. Aggregate descendant tails clear themselves when the last
@@ -182,7 +182,7 @@ export class LockManager {
     }
   };
 
-  protected createArtifact = (path: string, lock: Promise<unknown>, type: "read" | "write"): Artifact => {
+  private createArtifact = (path: string, lock: Promise<unknown>, type: "read" | "write"): Artifact => {
     const locks: Promise<unknown>[] = [];
     const ancestors: GraphNode[] = [];
     path = pth.resolve(path);
