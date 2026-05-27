@@ -91,6 +91,7 @@ export class LockManager {
       switch (type) {
         case "read": {
           const { node, locks, ancestors } = this.createArtifact(path, type);
+
           for (const ancestor of ancestors) {
             // Cache descendant activity on each ancestor along the path so the
             // target node can detect conflicting locks below it without walking the
@@ -115,7 +116,9 @@ export class LockManager {
               }
             })
             .catch(this.errorHandler);
-          await Promise.all(locks);
+          if (locks.length) {
+            await Promise.all(locks);
+          }
           return acquireId;
         }
         case "write": {
@@ -141,7 +144,9 @@ export class LockManager {
               }
             })
             .catch(this.errorHandler);
-          await Promise.all(locks);
+          if (locks.length) {
+            await Promise.all(locks);
+          }
           return acquireId;
         }
         default: {
