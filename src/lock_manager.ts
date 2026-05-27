@@ -33,7 +33,7 @@ export class LockManager {
       });
 
       for (const path of paths) {
-        const artifact = this.createArtifact(path, lock, "write");
+        const artifact = this.createArtifact(path, "write");
         nodes.push(artifact.node);
         locks = locks.concat(artifact.locks);
         ancestors = ancestors.concat(artifact.ancestors);
@@ -90,7 +90,7 @@ export class LockManager {
       });
       switch (type) {
         case "read": {
-          const { node, locks, ancestors } = this.createArtifact(path, lock, type);
+          const { node, locks, ancestors } = this.createArtifact(path, type);
           for (const ancestor of ancestors) {
             // Cache descendant activity on each ancestor along the path so the
             // target node can detect conflicting locks below it without walking the
@@ -119,7 +119,7 @@ export class LockManager {
           return acquireId;
         }
         case "write": {
-          const { node, locks, ancestors } = this.createArtifact(path, lock, type);
+          const { node, locks, ancestors } = this.createArtifact(path, type);
           for (const ancestor of ancestors) {
             const tail = ancestor.appendDescendantWriteTail(lock);
             tail
@@ -182,7 +182,7 @@ export class LockManager {
     }
   };
 
-  private createArtifact = (path: string, lock: Promise<unknown>, type: "read" | "write"): Artifact => {
+  private createArtifact = (path: string, type: "read" | "write"): Artifact => {
     const locks: Promise<unknown>[] = [];
     const ancestors: GraphNode[] = [];
     path = pth.resolve(path);
