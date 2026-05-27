@@ -31,14 +31,12 @@ export class LockManager {
       const lock = new Promise<unknown>((r) => {
         this.idToRelease.set(acquireId, r);
       });
-
       for (const path of paths) {
         const artifact = this.createArtifact(path, "write");
         nodes.push(artifact.node);
         locks = locks.concat(artifact.locks);
         ancestors = ancestors.concat(artifact.ancestors);
       }
-
       // Append ancestor descendant tails only after every path has collected
       // its blockers. Otherwise acquireAll(["/a/b", "/a"]) would make "/a"
       // wait on its own "/a/b" lock and deadlock.
@@ -53,7 +51,6 @@ export class LockManager {
           })
           .catch(this.errorHandler);
       }
-
       for (const node of nodes) {
         // A subsequent write may not write until all prior reads and writes have completed.
         const tail = node.appendWriteTail(lock);
@@ -91,7 +88,6 @@ export class LockManager {
       switch (type) {
         case "read": {
           const { node, locks, ancestors } = this.createArtifact(path, type);
-
           for (const ancestor of ancestors) {
             // Cache descendant activity on each ancestor along the path so the
             // target node can detect conflicting locks below it without walking the
