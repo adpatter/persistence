@@ -24,23 +24,22 @@ export class LockManager {
       throw new Error("Paths must not be empty.");
     }
     const acquireId = this.id++;
-    const nodes: GraphNode[] = [];
-    let locks: Promise<unknown>[] = [];
-    let ancestors: GraphNode[] = [];
+    const nodes = new Set<GraphNode>();
+    const locks = new Set<Promise<unknown>>();
+    const ancestors = new Set<GraphNode>();
     try {
       const lock = new Promise<unknown>((r) => {
         this.idToRelease.set(acquireId, r);
       });
       for (const path of paths) {
         const artifact = this.createArtifact(path, "write");
-        nodes.push(artifact.node);
-        locks = locks.concat(artifact.locks);
-        ancestors = ancestors.concat(artifact.ancestors);
+        nodes.add(artifact.node);
+        for (const lock of artifact.locks) locks.add(lock);
+        for (const ancestor of artifact.ancestors) ancestors.add(ancestor);
       }
       // Append ancestor descendant tails only after every path has collected
       // its blockers. Otherwise acquireAll(["/a/b", "/a"]) would make "/a"
       // wait on its own "/a/b" lock and deadlock.
-      ancestors = [...new Set(ancestors)];
       for (const ancestor of ancestors) {
         const tail = ancestor.appendDescendantWriteTail(lock);
         tail
@@ -64,7 +63,9 @@ export class LockManager {
           })
           .catch(this.errorHandler);
       }
-      await Promise.all(locks);
+      if (locks.size) {
+        await Promise.all(locks);
+      }
       return acquireId;
     } catch (err) {
       const r = this.idToRelease.get(acquireId);
