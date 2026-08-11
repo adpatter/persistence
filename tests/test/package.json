@@ -4,12 +4,9 @@
   "description": "",
   "main": "./dist/main.js",
   "scripts": {
-    "build": "tsc --build .",
     "clean": "rm -rf ./dist/*",
+    "build": "tsc --build .",
     "clean:build": "npm run clean && npm run build",
-    "lint": "npx eslint .",
-    "format": "npx prettier --write .",
-    "format:lint": "npm run format && npm run lint",
     "start": "node --expose-gc .",
     "test": "npm run clean:build && node --expose-gc .",
     "monitor": "nodemon ."
