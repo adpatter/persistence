@@ -377,13 +377,7 @@ cd persistence
 #### Install Persistence dependencies.
 
 ```bash
-npm install
-```
-
-#### Install test suite dependencies.
-
-```bash
-npm install --prefix tests/test
+npm install && npm update
 ```
 
 #### Run the tests.
