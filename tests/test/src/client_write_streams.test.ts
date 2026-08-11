@@ -293,7 +293,11 @@ await suite("Client (write streams)", async () => {
     const file = pth.join(dir, "write-options.json");
     await fsp.mkdir(dir, { recursive: true });
 
-    const ws = await streamClient.createWriteStream(file, { encoding: "utf8", autoClose: false, fd: 1 } as unknown as Parameters<typeof fs.createWriteStream>[1]);
+    const ws = await streamClient.createWriteStream(file, {
+      encoding: "utf8",
+      autoClose: false,
+      fd: 1,
+    } as unknown as Parameters<typeof fs.createWriteStream>[1]);
     ws.end(JSON.stringify({ ok: true }));
     await finished(ws);
 
@@ -311,7 +315,11 @@ await suite("Client (write streams)", async () => {
     const file = pth.join(dir, "data.json");
     await fsp.mkdir(dir, { recursive: true });
 
-    const ws = await streamClient.createWriteStream(file, { encoding: "utf8", autoClose: false, fd: 1 } as unknown as Parameters<typeof fs.createWriteStream>[1]);
+    const ws = await streamClient.createWriteStream(file, {
+      encoding: "utf8",
+      autoClose: false,
+      fd: 1,
+    } as unknown as Parameters<typeof fs.createWriteStream>[1]);
     ws.end(JSON.stringify({ ok: true }));
     await finished(ws);
 
@@ -366,7 +374,10 @@ await suite("Client (write streams)", async () => {
     mutableFsp.rm = () => Promise.reject(new Error("Injected cleanup failure"));
     try {
       ws.end(JSON.stringify({ v: 2 }));
-      await assert.rejects(withTimeout(finished(ws), "Timed out waiting for commit failure."), /Injected rename failure/);
+      await assert.rejects(
+        withTimeout(finished(ws), "Timed out waiting for commit failure."),
+        /Injected rename failure/
+      );
     } finally {
       mutableFsp.rename = originalRename;
       mutableFsp.rm = originalRm;

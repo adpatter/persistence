@@ -15,7 +15,10 @@ await suite("Client (write)", async () => {
     await fsp.mkdir(path, { recursive: true });
     await fsp.writeFile(child, "keep");
 
-    await assert.rejects(writeClient.write(path, "oops", "utf8"), /EISDIR|operation not permitted|illegal operation on a directory/i);
+    await assert.rejects(
+      writeClient.write(path, "oops", "utf8"),
+      /EISDIR|operation not permitted|illegal operation on a directory/i
+    );
 
     const childData = await fsp.readFile(child, "utf8");
     assert.strictEqual(childData, "keep");
@@ -63,7 +66,10 @@ await suite("Client (write)", async () => {
     await writeClient.write(path, JSON.stringify({ v: 1 }));
 
     await withFailingSyncOnOpen(dir, new Error("Injected directory sync failure"), async () => {
-      await assert.rejects(writeClient.write(path, JSON.stringify({ v: 2 }), "utf8"), /Injected directory sync failure/);
+      await assert.rejects(
+        writeClient.write(path, JSON.stringify({ v: 2 }), "utf8"),
+        /Injected directory sync failure/
+      );
     });
 
     const readData = await writeClient.read(path, "utf8");
@@ -83,7 +89,10 @@ await suite("Client (write)", async () => {
     await fsp.mkdir(path, { recursive: true });
     await fsp.writeFile(child, "keep");
 
-    await assert.rejects(writeClient.write(path, "oops", "utf8"), /EISDIR|operation not permitted|illegal operation on a directory/i);
+    await assert.rejects(
+      writeClient.write(path, "oops", "utf8"),
+      /EISDIR|operation not permitted|illegal operation on a directory/i
+    );
 
     const childData = await fsp.readFile(child, "utf8");
     assert.strictEqual(childData, "keep");

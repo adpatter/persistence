@@ -49,7 +49,10 @@ await suite("LockManager (state-machine)", async () => {
     return isAncestorOrSelf(a, b) || isAncestorOrSelf(b, a);
   };
 
-  const requestsConflict = (a: Pick<ModelRequest, "mode" | "paths">, b: Pick<ModelRequest, "mode" | "paths">): boolean => {
+  const requestsConflict = (
+    a: Pick<ModelRequest, "mode" | "paths">,
+    b: Pick<ModelRequest, "mode" | "paths">
+  ): boolean => {
     if (a.mode === "read" && b.mode === "read") {
       return false;
     }
@@ -63,7 +66,9 @@ await suite("LockManager (state-machine)", async () => {
       for (let i = 0; i < pending.length; i++) {
         const request = pending[i];
         const activeConflict = active.some((activeRequest) => requestsConflict(request, activeRequest));
-        const earlierPendingConflict = pending.slice(0, i).some((pendingRequest) => requestsConflict(request, pendingRequest));
+        const earlierPendingConflict = pending
+          .slice(0, i)
+          .some((pendingRequest) => requestsConflict(request, pendingRequest));
         if (!activeConflict && !earlierPendingConflict) {
           pending.splice(i, 1);
           request.state = "active";
@@ -78,7 +83,11 @@ await suite("LockManager (state-machine)", async () => {
   const assertModelMatchesManager = async (requests: ModelRequest[]): Promise<void> => {
     await tick();
     for (const request of requests) {
-      assert.strictEqual(request.resolved, request.state !== "pending", `request ${String(request.id)} resolution state`);
+      assert.strictEqual(
+        request.resolved,
+        request.state !== "pending",
+        `request ${String(request.id)} resolution state`
+      );
       if (request.state !== "pending") {
         assert.strictEqual(typeof request.lockId, "number", `request ${String(request.id)} lock id`);
       }
@@ -192,8 +201,16 @@ await suite("LockManager (state-machine)", async () => {
     assert.strictEqual(managerRoot.descendants.size, 0, `lock graph pruned for seed ${seed.toString(16)}`);
     assert.strictEqual(managerRoot.readTail, null, `root read tail cleared for seed ${seed.toString(16)}`);
     assert.strictEqual(managerRoot.writeTail, null, `root write tail cleared for seed ${seed.toString(16)}`);
-    assert.strictEqual(managerRoot.descendantReadTail, null, `root descendant read tail cleared for seed ${seed.toString(16)}`);
-    assert.strictEqual(managerRoot.descendantWriteTail, null, `root descendant write tail cleared for seed ${seed.toString(16)}`);
+    assert.strictEqual(
+      managerRoot.descendantReadTail,
+      null,
+      `root descendant read tail cleared for seed ${seed.toString(16)}`
+    );
+    assert.strictEqual(
+      managerRoot.descendantWriteTail,
+      null,
+      `root descendant write tail cleared for seed ${seed.toString(16)}`
+    );
   };
 
   await test("generated acquire/release sequences match a reference lock model.", async () => {
@@ -206,7 +223,10 @@ await suite("LockManager (state-machine)", async () => {
   await test(
     "optional soak stress test matches the reference lock model",
     {
-      skip: process.env.PERSISTENCE_SOAK === "1" ? false : "Set PERSISTENCE_SOAK=1 to run the optional lock-manager soak test.",
+      skip:
+        process.env.PERSISTENCE_SOAK === "1"
+          ? false
+          : "Set PERSISTENCE_SOAK=1 to run the optional lock-manager soak test.",
       timeout: readPositiveIntegerEnv("PERSISTENCE_SOAK_TIMEOUT_MS", 120_000),
     },
     async () => {

@@ -92,7 +92,11 @@ await suite("Client (read streams)", async () => {
     await fsp.mkdir(dir, { recursive: true });
     await streamClient.write(file, JSON.stringify({ ok: true }));
 
-    const rs = await streamClient.createReadStream(file, { encoding: "utf8", autoClose: false, fd: 1 } as unknown as Parameters<typeof fs.createReadStream>[1]);
+    const rs = await streamClient.createReadStream(file, {
+      encoding: "utf8",
+      autoClose: false,
+      fd: 1,
+    } as unknown as Parameters<typeof fs.createReadStream>[1]);
     const chunks: string[] = [];
     rs.on("data", (chunk) => {
       chunks.push(String(chunk));

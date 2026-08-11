@@ -66,7 +66,10 @@ export class WriteStream extends stream.Writable {
     })();
   }
 
-  _writev(chunks: { chunk: string | Buffer; encoding: BufferEncoding }[], callback: (error?: Error | null) => void): void {
+  _writev(
+    chunks: { chunk: string | Buffer; encoding: BufferEncoding }[],
+    callback: (error?: Error | null) => void
+  ): void {
     void (async () => {
       try {
         let drain = false;

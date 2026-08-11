@@ -83,7 +83,10 @@ export class Client {
   public collect(path: string, options: ClientCollectDirentOptions): Promise<fs.Dirent<Buffer<ArrayBuffer>>[]>;
   public collect(path: string, options?: ClientCollectStringOptions): Promise<string[]>;
   public collect(path: string, options: ClientCollectBufferOptions): Promise<Buffer<ArrayBuffer>[]>;
-  public async collect(path: string, options?: ClientCollectOptions): Promise<string[] | fs.Dirent<Buffer<ArrayBuffer>>[] | Buffer<ArrayBuffer>[]> {
+  public async collect(
+    path: string,
+    options?: ClientCollectOptions
+  ): Promise<string[] | fs.Dirent<Buffer<ArrayBuffer>>[] | Buffer<ArrayBuffer>[]> {
     if (!pth.isAbsolute(path)) {
       throw new Error("Path must be absolute.");
     }
@@ -180,7 +183,10 @@ export class Client {
     }
   }
 
-  public async createReadStream(path: string, options?: ClientCreateReadStreamOptions | BufferEncoding): Promise<fs.ReadStream> {
+  public async createReadStream(
+    path: string,
+    options?: ClientCreateReadStreamOptions | BufferEncoding
+  ): Promise<fs.ReadStream> {
     if (!pth.isAbsolute(path)) {
       throw new Error("Path must be absolute.");
     }
@@ -217,7 +223,11 @@ export class Client {
     }
   }
 
-  public async write(path: string, data: Parameters<typeof fsp.writeFile>[1], options?: ClientWriteOptions | BufferEncoding): Promise<void> {
+  public async write(
+    path: string,
+    data: Parameters<typeof fsp.writeFile>[1],
+    options?: ClientWriteOptions | BufferEncoding
+  ): Promise<void> {
     if (!pth.isAbsolute(path)) {
       throw new Error("Path must be absolute.");
     }
@@ -229,7 +239,10 @@ export class Client {
     const writeFileOptions =
       typeof options == "string"
         ? { encoding: options, flush: this.durable }
-        : { ...{ encoding: options?.encoding, mode: options?.mode, signal: options?.signal }, ...{ flush: this.durable } };
+        : {
+            ...{ encoding: options?.encoding, mode: options?.mode, signal: options?.signal },
+            ...{ flush: this.durable },
+          };
     const id = await this.manager.acquire(path, "write");
     try {
       const tempFile = `.${crypto.randomUUID()}`;
@@ -261,7 +274,10 @@ export class Client {
     }
   }
 
-  public async createWriteStream(path: string, options?: ClientCreateWriteStreamOptions | BufferEncoding): Promise<stream.Writable> {
+  public async createWriteStream(
+    path: string,
+    options?: ClientCreateWriteStreamOptions | BufferEncoding
+  ): Promise<stream.Writable> {
     if (!pth.isAbsolute(path)) {
       throw new Error("Path must be absolute.");
     }
@@ -278,7 +294,12 @@ export class Client {
       typeof options == "string"
         ? { encoding: options, durable: this.durable, path, dir, id, manager: this.manager }
         : {
-            ...{ highWaterMark: options?.highWaterMark, encoding: options?.encoding, mode: options?.mode, signal: options?.signal },
+            ...{
+              highWaterMark: options?.highWaterMark,
+              encoding: options?.encoding,
+              mode: options?.mode,
+              signal: options?.signal,
+            },
             ...{ durable: this.durable, path, dir, id, manager: this.manager },
           };
     try {
