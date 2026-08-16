@@ -38,7 +38,7 @@ npm install @far-analytics/persistence
 
 ### Requirements
 
-Node.js `20.10.0` or newer is required.
+Node.js `20.19.0` or newer is required.
 
 ## Usage
 
