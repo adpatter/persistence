@@ -29,6 +29,7 @@
     "lint": "eslint src",
     "lint:all": "eslint .",
     "check": "npm run lint:all && npm test",
+    "prepack": "npm run clean:build",
     "test": "npm run clean:build && npm run test --workspace ./tests/persistence-test"
   },
   "repository": {
@@ -42,12 +43,12 @@
   },
   "homepage": "https://github.com/far-analytics/persistence#readme",
   "engines": {
-    "node": ">=20.10.0"
+    "node": ">=20.19.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.9.0",
-    "@types/node": "^25.5.0",
+    "@types/node": "~20.19.0",
     "eslint": "^10.0.1",
     "globals": "^17.3.0",
     "nodemon": "^3.1.14",
