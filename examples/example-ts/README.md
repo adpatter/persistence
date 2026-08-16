@@ -78,10 +78,10 @@ git clone https://github.com/far-analytics/persistence.git
 cd persistence/examples/example-ts
 ```
 
-#### Install the example dependencies.
+#### Install and update the example dependencies.
 
 ```bash
-npm install
+npm update
 ```
 
 #### Build the application.
