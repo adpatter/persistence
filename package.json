@@ -16,7 +16,7 @@
     "LICENSE"
   ],
   "workspaces": [
-    "tests/persistence-test"
+    "tests/persistence_test"
   ],
   "scripts": {
     "clean": "rm -rf ./dist/*",
@@ -29,7 +29,7 @@
     "lint:all": "eslint .",
     "check": "npm run lint:all && npm test",
     "prepack": "npm run clean:build",
-    "test": "npm run clean:build && npm run test --workspace ./tests/persistence-test"
+    "test": "npm run clean:build && npm run test --workspace ./tests/persistence_test"
   },
   "repository": {
     "type": "git",
