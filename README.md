@@ -120,7 +120,7 @@ Please see the Node.js [example](https://github.com/far-analytics/persistence/tr
 
 ## Horizontal scaling
 
-Persistence does not implement distributed locking. To use it in a horizontally scaled system, all operations that need coordination must route through one authoritative process or service that owns the shared `LockManager` (for example, a single lock service accessed over RPC). Independent processes with independent `LockManager` instances are not coordinated.
+For horizontally, all operations that need coordination must route through one authoritative process or service that owns the shared `LockManager` (for example, a single lock service accessed over RPC).
 
 ## Durability
 
@@ -139,8 +139,6 @@ Persistence supports atomic-style file replacement via temp file + rename for `w
 - The directory structure that Persistence operates on is assumed to be hierarchical.
 - Hence, symlinks/aliases are not supported.
 - Filesystem root-path operations (i.e., operations on `/`, `C:\`, or a UNC share root such as `\\server\share\`) are restricted: `client.collect(root)` is supported, but `client.read(root)`, `client.createReadStream(root)`, `client.write(root)`, `client.createWriteStream(root)`, `client.rename(root, path)`, `client.rename(path, root)`, and `client.delete(root)` are not.
-- Distributed locking or coordination across multiple independent `LockManager` instances is not supported.
-- No protection against external processes that bypass the client and write directly to disk.
 - When durability is enabled, fsync on directories is considered best‑effort and behaves differently on different filesystems.
 - Durability operations have been tested on Linux on ext4; however, fsync (durability mode) may throw `EPERM` on Windows on NTFS.
 
