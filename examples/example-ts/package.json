@@ -23,7 +23,7 @@
   "type": "module",
   "devDependencies": {
     "@types/node": "~20.19.0",
-    "typescript": "^5.1.6"
+    "typescript": "^5.9.3"
   },
   "private": true
 }
