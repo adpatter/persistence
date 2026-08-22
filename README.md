@@ -120,7 +120,7 @@ Please see the Node.js [example](https://github.com/far-analytics/persistence/tr
 
 ## Horizontal scaling
 
-For horizontally, all operations that need coordination must route through one authoritative process or service that owns the shared `LockManager` (for example, a single lock service accessed over RPC).
+For horizontally scaled systems, all operations that need coordination must route through one authoritative process or service that owns the shared `LockManager` (for example, a single lock service accessed over RPC).
 
 ## Durability
 
@@ -375,7 +375,7 @@ cd persistence
 #### Install Persistence dependencies.
 
 ```bash
-npm install && npm update
+npm install
 ```
 
 #### Run the tests.
