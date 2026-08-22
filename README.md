@@ -105,11 +105,11 @@ await once(readStream, "close");
 
 ### _"Hello, World!"_ <sup><sup>\<TypeScript\></sup></sup>
 
-Please see the TypeScript [example](https://github.com/adpatter/persistence/tree/main/examples/example-ts) for a working implementation.
+Please see the TypeScript [example](https://github.com/adamjpatterson/persistence/tree/main/examples/example-ts) for a working implementation.
 
 ### _"Hello, World!"_ <sup><sup>\<Node.js\></sup></sup>
 
-Please see the Node.js [example](https://github.com/adpatter/persistence/tree/main/examples/example-nodejs) for a working implementation.
+Please see the Node.js [example](https://github.com/adamjpatterson/persistence/tree/main/examples/example-nodejs) for a working implementation.
 
 ## Locking model
 
@@ -363,7 +363,7 @@ Until `2.0.0`, Persistence does not promise strict semantic versioning. Minor re
 #### Clone the repository.
 
 ```bash
-git clone https://github.com/adpatter/persistence
+git clone https://github.com/adamjpatterson/persistence
 ```
 
 #### Change directory into the root of the repository.
@@ -408,9 +408,9 @@ Optional controls:
 
 ## Support
 
-For feature requests or issues, please open an [issue](https://github.com/adpatter/persistence/issues) or contact the author.
+For feature requests or issues, please open an [issue](https://github.com/adamjpatterson/persistence/issues) or contact the author.
 
-- [Adam Patterson](https://github.com/adpatter)
+- [Adam Patterson](https://github.com/adamjpatterson)
 
 ## Colophon
 

@@ -70,7 +70,7 @@ await once(readStream, "close");
 #### Clone the Persistence repository.
 
 ```bash
-git clone https://github.com/adpatter/persistence.git
+git clone https://github.com/adamjpatterson/persistence.git
 ```
 
 #### Change directory into the example.

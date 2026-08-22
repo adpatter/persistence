@@ -33,14 +33,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adpatter/persistence.git"
+    "url": "git+https://github.com/adamjpatterson/persistence.git"
   },
   "author": "FAR",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/adpatter/persistence/issues"
+    "url": "https://github.com/adamjpatterson/persistence/issues"
   },
-  "homepage": "https://github.com/adpatter/persistence#readme",
+  "homepage": "https://github.com/adamjpatterson/persistence#readme",
   "engines": {
     "node": ">=20.19.0"
   },
