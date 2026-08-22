@@ -10,20 +10,21 @@ In this example you will use Persistence in order to read, write, stream, and li
 
 #### Import `Client` and `LockManager`.
 
-```ts
+```js
+import { once } from "node:events";
 import { Client, LockManager } from "@far-analytics/persistence";
 ```
 
 #### Create an instance of a `LockManager` and `Client`.
 
-```ts
+```js
 const manager = new LockManager();
 const client = new Client({ manager, durable: true });
 ```
 
 #### Write a file and read it back.
 
-```ts
+```js
 await client.write("/tmp/example.json", JSON.stringify({ message: "Hello, World!" }));
 
 const data = await client.read("/tmp/example.json", "utf8");
@@ -32,26 +33,26 @@ console.log(JSON.parse(data)); // { message: "Hello, World!" }
 
 #### Collect directory contents.
 
-```ts
+```js
 const entries = await client.collect("/tmp", { encoding: "utf8", withFileTypes: false });
 console.log(entries); // ['example.json']
 ```
 
 #### Rename a file.
 
-```ts
+```js
 await client.rename("/tmp/example.json", "/tmp/archive/example.json");
 ```
 
 #### Delete a file.
 
-```ts
+```js
 await client.delete("/tmp/archive/example.json");
 ```
 
 #### Stream a write and read it back.
 
-```ts
+```js
 const writeStream = await client.createWriteStream("/tmp/example.json");
 writeStream.write(JSON.stringify({ message: "Streaming Hello, World!" }) + "\n");
 writeStream.end();

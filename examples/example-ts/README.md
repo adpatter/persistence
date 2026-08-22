@@ -11,6 +11,7 @@ In this example you will use Persistence in order to read, write, stream, and li
 #### Import `Client` and `LockManager`.
 
 ```ts
+import { once } from "node:events";
 import { Client, LockManager } from "@far-analytics/persistence";
 ```
 
