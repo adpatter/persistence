@@ -33,14 +33,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/far-analytics/persistence.git"
+    "url": "git+https://github.com/adpatter/persistence.git"
   },
   "author": "FAR",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/far-analytics/persistence/issues"
+    "url": "https://github.com/adpatter/persistence/issues"
   },
-  "homepage": "https://github.com/far-analytics/persistence#readme",
+  "homepage": "https://github.com/adpatter/persistence#readme",
   "engines": {
     "node": ">=20.19.0"
   },
