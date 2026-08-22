@@ -1,5 +1,5 @@
 {
-  "name": "@far-analytics/persistence-scratch",
+  "name": "@far-analytics/persistence-manual-tests",
   "version": "1.0.0",
   "description": "",
   "main": "./dist/main.js",
